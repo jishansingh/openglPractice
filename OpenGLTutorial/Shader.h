@@ -101,6 +101,12 @@ public:
 	void setUniform1i(const char* un_name, int data) {
 		glUniform1i(glGetUniformLocation(this->prog_id, un_name), data);
 	}
+	void setUniform1f(const char* un_name, float data) {
+		glUniform1f(glGetUniformLocation(this->prog_id, un_name), data);
+	}
+	inline GLuint getID() const { return this->prog_id; }
+
+
 };
 
 

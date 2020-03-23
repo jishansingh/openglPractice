@@ -4,8 +4,11 @@ layout (location=1) in vec3 aTexcoord;
 layout (location=2) in vec3 aNormal;
 
 uniform mat4 modelMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
+layout (std140) uniform Matrices
+{
+	mat4 viewMatrix;
+	mat4 projectionMatrix;
+};
 
 
 out vec3 vs_texcoord;

@@ -37,7 +37,7 @@ void main(){
 		fs_color=vec4(1.f,0.f,0.f,1.f);
 		return;
 	}*/
-	if(1==1){
+	if(1==2){
 		vec4 ambient_final=calcAmbient();
 		vec4 diffuse_final=calcDiffuse(gs_position,lightPos0,gs_normal);
 		vec4 specularFinal=calcSpecular(gs_position,lightPos0,gs_normal,camPos);
@@ -51,8 +51,8 @@ void main(){
 	}
 	else{
 		float depth=gl_FragCoord.z;
-		fs_color=vec4(depth,depth,depth,1.f);
-		gl_FragDepth = gl_FragCoord.z + 0.1;
+		fs_color=vec4(1.f,0.f,0.f,1.f);
+		//gl_FragDepth = gl_FragCoord.z + 0.1;
 	}
 		
 }

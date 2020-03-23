@@ -120,7 +120,7 @@ int main() {
 
 	glEnable(GL_DEPTH_TEST);
 
-
+	
 	unsigned int vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -151,6 +151,9 @@ int main() {
 	glEnableVertexAttribArray(3);
 	*/
 	Shader prog_final("skyboxVertexShader.glsl", "skyboxFragmentShader.glsl", "");
+
+
+
 
 	//set texture for 
 	unsigned int textureID;
@@ -209,10 +212,16 @@ int main() {
 	projectionMatrix = glm::perspective(glm::radians(fov), static_cast<float>(framebufferwidth) / framebufferheight, nearPlane, farPlane);
 
 	prog_final.Use();
+	/*
 	//set uniform matrix
+
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(viewMatrix));
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projectionMatrix));
+	*/
 	prog_final.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
-	prog_final.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
-	prog_final.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
+	//prog_final.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
+	//prog_final.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
 	
 	//set uniform for lightening
 	glm::vec3 lightPos0(1.f, 0.f, 1.f);
@@ -236,6 +245,10 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_box);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+	//glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+	//glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices), sizeof(normal), normal);
+	//glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices) + sizeof(normal), sizeof(texcoord), texcoord);
+
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), 0);
 	glEnableVertexAttribArray(0);
@@ -246,9 +259,30 @@ int main() {
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	Shader prog_box("cube3Dvertexshader.glsl", "cube3Dfragmentshader.glsl", "");
+	Shader prog_box("cube3Dvertexshader.glsl", "cube3Dfragmentshader.glsl", "cube3DgeometryShader.glsl");
+
+	Shader prog_normal("NormalVertexShader.glsl", "NormalFragmentShader.glsl", "NormalGeometryShader.glsl");
 
 
+
+	//uniform buffer object
+	unsigned int ubo;
+	glGenBuffers(1, &ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
+
+	unsigned int skyboxIndex = glGetUniformBlockIndex(prog_final.getID(), "Matrices");
+	unsigned int cubeIndex = glGetUniformBlockIndex(prog_box.getID(), "Matrices");
+	unsigned int NormalIndex = glGetUniformBlockIndex(prog_box.getID(), "Matrices");
+
+	glUniformBlockBinding(prog_final.getID(), skyboxIndex, 0);
+	glUniformBlockBinding(prog_box.getID(), cubeIndex, 0);
+	glUniformBlockBinding(prog_normal.getID(), NormalIndex, 0);
+
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, ubo, 0, 2 * sizeof(glm::mat4));
+	
 	
 	//set texture for 
 	unsigned int texture_box;
@@ -276,8 +310,14 @@ int main() {
 	
 	prog_box.Use();
 	//set uniform matrix
-	prog_box.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
-	prog_box.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
+	//prog_box.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
+	//prog_box.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
+
+
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(viewMatrix));
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projectionMatrix));
+
 	prog_box.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
 	prog_box.setUniformMatrix4fv("someMat", GL_FALSE, modelMatrix);
 
@@ -285,9 +325,21 @@ int main() {
 	//glm::vec3 lightPos0(1.f, 0.f, 1.f);
 	prog_box.setUniform3f("camPos", GL_FALSE, camPosition);
 	prog_box.setUniform3f("lightPos0", GL_FALSE, lightPos0);
+	prog_box.setUniform1f("time", 0.f);
 
+	/*
+	prog_normal.Use();
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(viewMatrix));
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projectionMatrix));
 
+	prog_final.Use();
+	//set uniform matrix
 
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(viewMatrix));
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projectionMatrix));
+	*/
 	while (!glfwWindowShouldClose(window)) {
 		prog_final.Use();
 		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
@@ -310,13 +362,14 @@ int main() {
 
 		viewMatrix = glm::lookAt(camPosition, camFront - camPosition, worldUp);
 
-
+		
 		prog_final.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
+		//glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(viewMatrix));
 		//prog_final.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
 		prog_final.setUniform1i("border", 0);
 		prog_final.setUniform3f("camPos", GL_FALSE, camPosition);
 		//glEnable(GL_DEPTH_TEST);
-		glDrawArrays(GL_TRIANGLES,0,noOfVertices);
+		//glDrawArrays(GL_TRIANGLES,0,noOfVertices);
 		prog_final.unUse();
 		//glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 		//glDisable(GL_DEPTH_TEST);
@@ -328,12 +381,32 @@ int main() {
 		modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.x), glm::vec3(1.f, 0.f, 0.f));
 		modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.y), glm::vec3(0.f, 1.f, 0.f));
 		modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.z), glm::vec3(0.f, 0.f, 1.f));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.25f));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.10f));
 		prog_box.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
-		prog_box.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(viewMatrix));
+		//prog_box.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
 		prog_box.setUniform3f("camPos", GL_FALSE, camPosition);
-
+		//glEnable(GL_PROGRAM_POINT_SIZE);
+		prog_box.setUniform1f("time", (float)glfwGetTime());
 		glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
+
+		prog_normal.Use();
+		glBindVertexArray(vao_box);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, texture_box);
+		modelMatrix = glm::mat4(1.f);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.f, 0.f, 0.f));
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.x), glm::vec3(1.f, 0.f, 0.f));
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.y), glm::vec3(0.f, 1.f, 0.f));
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.z), glm::vec3(0.f, 0.f, 1.f));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.10f));
+		prog_normal.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(viewMatrix));
+		//prog_box.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
+		prog_normal.setUniform3f("camPos", GL_FALSE, camPosition);
+		//glEnable(GL_PROGRAM_POINT_SIZE);
+		prog_normal.setUniform1f("time", (float)glfwGetTime());
+		glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
+
 
 		/*
 		modelMatrix = glm::mat4(1.f);
