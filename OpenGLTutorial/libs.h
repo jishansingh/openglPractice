@@ -14,13 +14,15 @@
 #include<gtc/matrix_transform.hpp>
 #include<gtc/type_ptr.hpp>
 
-
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 #include<SOIL2.h>
 
 
 struct Vertex {
 	glm::vec3 position;
-	glm::vec3 color;
+	glm::vec3 color;	
 	glm::vec2 texcoord;
 	glm::vec3 normal;
 };
