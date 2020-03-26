@@ -99,7 +99,11 @@ public:
 		glUniform3fv(glGetUniformLocation(this->prog_id, un_name), 1, glm::value_ptr(data));
 	}
 	void setUniform1i(const char* un_name, int data) {
-		glUniform1i(glGetUniformLocation(this->prog_id, un_name), data);
+		GLint loc = glGetUniformLocation(this->prog_id, un_name);
+		if (loc < 0||un_name=="material0.diffuseTex") {
+			std::cout << "warning setting uniform " << un_name << " " << data << std::endl;
+		}
+		glUniform1i(loc, data);
 	}
 	void setUniform1f(const char* un_name, float data) {
 		glUniform1f(glGetUniformLocation(this->prog_id, un_name), data);

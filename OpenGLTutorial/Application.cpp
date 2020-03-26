@@ -1,21 +1,24 @@
 #include"libs.h"
 #include"Shader.h"
 #include"Texture.h"
+#include"Mesh.h"
+#include"Model.h"
+
 
 void framebuffer_resize_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
 Vertex vertices_box[] = {
-	glm::vec3(-0.5f,0.5f,0.f)   ,glm::vec3(1.f,0.f,0.f) ,glm::vec2(0.f,1.f),glm::vec3(0.f,0.f,1.f),
-	glm::vec3(-0.5f,-0.5f,0.0f) ,glm::vec3(0.f,1.f,0.f) ,glm::vec2(0.f,0.f),glm::vec3(0.f,0.f,1.f),
-	glm::vec3(0.5f,-0.5f,0.0f)  ,glm::vec3(0.f,0.f,1.f) ,glm::vec2(1.f,0.f),glm::vec3(0.f,0.f,1.f),
-	glm::vec3(0.5f,0.5f,0.0f)   ,glm::vec3(0.f,0.f,1.f) ,glm::vec2(1.f,1.f),glm::vec3(0.f,0.f,1.f),
+	glm::vec3(-0.5f,0.5f,0.f)   ,glm::vec3(0.f,0.f,1.f),glm::vec2(0.f,1.f),
+	glm::vec3(-0.5f,-0.5f,0.0f) ,glm::vec3(0.f,0.f,1.f),glm::vec2(0.f,0.f),
+	glm::vec3(0.5f,-0.5f,0.0f)  ,glm::vec3(0.f,0.f,1.f),glm::vec2(1.f,0.f),
+	glm::vec3(0.5f,0.5f,0.0f)   ,glm::vec3(0.f,0.f,1.f),glm::vec2(1.f,1.f),
 };
 
-unsigned int noOfVerticesBox = sizeof(vertices_box) / sizeof(Vertex);
+unsigned int noOfBoxVertices = sizeof(vertices_box) / sizeof(Vertex);
 
-GLuint indices[] = {
+unsigned int indices[] = {
 	0,1,2,
 	0,2,3
 };
@@ -150,6 +153,8 @@ int main() {
 	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 	glEnableVertexAttribArray(3);
 	*/
+	
+	
 	Shader prog_final("skyboxVertexShader.glsl", "skyboxFragmentShader.glsl", "");
 
 
@@ -340,6 +345,41 @@ int main() {
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(viewMatrix));
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projectionMatrix));
 	*/
+	Shader nanosuit("loaderVertexShader.glsl", "loaderFragmentShader.glsl", "");
+
+	Model mod("objFile/nanosuit/nanosuit.obj");
+
+	/*
+	std::vector<Texture>diffTex;
+	std::vector<Texture>specTex;
+	std::vector<Vertex>vert_vec;
+	std::vector<GLuint>index_vec;
+	for (int i = 0; i < noOfBoxVertices; i++) {
+		vert_vec.push_back(vertices_box[i]);
+	}
+	for (int i = 0; i < noOfIndices; i++) {
+		index_vec.push_back(indices[i]);
+	}
+	Texture texture0("images/top.jpg",GL_TEXTURE_2D,0);
+	diffTex.push_back(texture0);
+	//specTex.push_back(texture0);
+	Mesh mesh(vert_vec, index_vec, diffTex, specTex);
+	*/
+	modelMatrix = glm::mat4(1.f);
+	modelMatrix = glm::translate(modelMatrix, position);
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.x), glm::vec3(1.f, 0.f, 0.f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.y), glm::vec3(0.f, 1.f, 0.f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.z), glm::vec3(0.f, 0.f, 1.f));
+	modelMatrix = glm::scale(modelMatrix, scale);
+
+	viewMatrix = glm::lookAt(camPosition, camFront - camPosition, worldUp);
+	
+	nanosuit.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
+	nanosuit.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
+	nanosuit.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
+	nanosuit.setUniform3f("camPos", GL_FALSE, camPosition);
+	nanosuit.setUniform3f("lightPos0", GL_FALSE, lightPos0);
+
 	while (!glfwWindowShouldClose(window)) {
 		prog_final.Use();
 		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
@@ -366,7 +406,7 @@ int main() {
 		prog_final.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
 		//glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(viewMatrix));
 		//prog_final.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
-		prog_final.setUniform1i("border", 0);
+		//prog_final.setUniform1i("border", 0);
 		prog_final.setUniform3f("camPos", GL_FALSE, camPosition);
 		//glEnable(GL_DEPTH_TEST);
 		//glDrawArrays(GL_TRIANGLES,0,noOfVertices);
@@ -388,7 +428,7 @@ int main() {
 		prog_box.setUniform3f("camPos", GL_FALSE, camPosition);
 		//glEnable(GL_PROGRAM_POINT_SIZE);
 		prog_box.setUniform1f("time", (float)glfwGetTime());
-		glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
+		//glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
 
 		prog_normal.Use();
 		glBindVertexArray(vao_box);
@@ -407,6 +447,23 @@ int main() {
 		prog_normal.setUniform1f("time", (float)glfwGetTime());
 		glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
 
+
+		//glBindVertexArray(mesh.getVAO());
+		nanosuit.Use();
+		nanosuit.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
+		viewMatrix = glm::lookAt(camPosition, camFront, worldUp);
+		nanosuit.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
+		projectionMatrix= glm::mat4(1.f);
+		projectionMatrix = glm::perspective(glm::radians(fov), static_cast<float>(framebufferwidth) / framebufferheight, nearPlane, farPlane);
+		nanosuit.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
+		nanosuit.setUniform3f("camPos", GL_FALSE, camPosition);
+		nanosuit.setUniform3f("lightPos0", GL_FALSE, lightPos0);
+		//texture0.bind();
+		//nanosuit.setUniform1i("diffTex", texture0.getTextureUnit());
+
+
+		nanosuit.Use();
+		mod.Draw(&nanosuit);
 
 		/*
 		modelMatrix = glm::mat4(1.f);

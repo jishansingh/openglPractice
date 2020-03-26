@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include"libs.h"
 
 class Texture {
@@ -8,27 +7,25 @@ private:
 	int width;
 	int height;
 	GLint textureUnit;
-	GLenum bindType;
 	GLenum textureType;
-
-	unsigned char* loadImage(const char* filename) {
-		unsigned char* ans_img = SOIL_load_image(filename, &this->width, &this->height, NULL, SOIL_LOAD_RGBA);
-		return ans_img;
-	}
 public:
-	Texture(const char* filename, GLenum type, GLint texture_unit, GLenum textureType) {
+	Texture(std::string filename, GLenum type, GLint texture_unit) {
 		this->textureUnit = texture_unit;
 		this->textureType = type;
-		this->textureType = textureType;
-		unsigned char* image = loadImage(filename);
+		unsigned char* image = SOIL_load_image(filename.c_str(), &this->width, &this->height, NULL, SOIL_LOAD_RGBA);
 
 		glGenTextures(1, &texture_id);
 		glBindTexture(type, texture_id);
-
+		/*
 		glTexParameteri(type, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(type, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(type, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);*/
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
 
 		if (image) {
 			glTexImage2D(type, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
@@ -52,11 +49,9 @@ public:
 		return this->texture_id;
 	}
 	void bind() {
-		glActiveTexture(textureType + this->textureUnit);
+		glActiveTexture(GL_TEXTURE0 + this->textureUnit);
 		glBindTexture(this->textureType, this->texture_id);
 	}
 	GLint getTextureUnit() { return this->textureUnit; }
 };
-
-
 
