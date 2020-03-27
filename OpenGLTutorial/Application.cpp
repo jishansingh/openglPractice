@@ -71,6 +71,38 @@ float vertices[] = {
 
 unsigned int noOfVertices = sizeof(vertices) / (9*sizeof(float));
 
+void updateUniforms(GLFWwindow*window,Shader& shader,glm::vec3 position,glm::vec3 rotation,glm::vec3 scale,glm::vec3 camPosition,glm::vec3 lightPos0) {
+	glm::mat4 modelMatrix(1.f);
+	modelMatrix = glm::translate(modelMatrix, position);
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.x), glm::vec3(1.f, 0.f, 0.f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.y), glm::vec3(0.f, 1.f, 0.f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.z), glm::vec3(0.f, 0.f, 1.f));
+	modelMatrix = glm::scale(modelMatrix, scale);
+
+	//view Matrix
+
+	glm::vec3 worldUp(0.f, 1.f, 0.f);
+	glm::vec3 camFront(0.f, 0.f, -1.f);
+
+	glm::mat4 viewMatrix(1.f);
+	viewMatrix = glm::lookAt(camPosition, camFront - camPosition, worldUp);
+
+	//projection matrix
+	float fov = 90.f;
+	float nearPlane = 0.1f;
+	float farPlane = 100.f;
+
+	glm::mat4 projectionMatrix(1.f);
+	int framebufferwidth;
+	int framebufferheight;
+	glfwGetFramebufferSize(window, &framebufferwidth, &framebufferheight);
+	projectionMatrix = glm::perspective(glm::radians(fov), static_cast<float>(framebufferwidth) / framebufferheight, nearPlane, farPlane);
+	shader.setUniform3f("camPos", GL_FALSE, camPosition);
+	shader.setUniform3f("lightPos0", GL_FALSE, lightPos0);
+	shader.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
+	shader.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
+	shader.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
+}
 
 
 void updateInput(GLFWwindow* window, glm::vec3& positon) {
@@ -123,6 +155,7 @@ int main() {
 
 	glEnable(GL_DEPTH_TEST);
 
+	
 	
 	unsigned int vao;
 	glGenVertexArrays(1, &vao);
@@ -345,7 +378,7 @@ int main() {
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(viewMatrix));
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projectionMatrix));
 	*/
-	Shader nanosuit("loaderVertexShader.glsl", "loaderFragmentShader.glsl", "");
+	Shader nanosuit("loaderVertexShader.glsl", "loaderFragmentShader.glsl", "loaderGeometryFragment.glsl");
 
 	Model mod("objFile/nanosuit/nanosuit.obj");
 
@@ -365,20 +398,21 @@ int main() {
 	//specTex.push_back(texture0);
 	Mesh mesh(vert_vec, index_vec, diffTex, specTex);
 	*/
-	modelMatrix = glm::mat4(1.f);
-	modelMatrix = glm::translate(modelMatrix, position);
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.x), glm::vec3(1.f, 0.f, 0.f));
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.y), glm::vec3(0.f, 1.f, 0.f));
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.z), glm::vec3(0.f, 0.f, 1.f));
-	modelMatrix = glm::scale(modelMatrix, scale);
-
-	viewMatrix = glm::lookAt(camPosition, camFront - camPosition, worldUp);
+	updateUniforms(window, nanosuit, position, rotation, scale,camPosition, lightPos0);
 	
-	nanosuit.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
-	nanosuit.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
-	nanosuit.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
-	nanosuit.setUniform3f("camPos", GL_FALSE, camPosition);
-	nanosuit.setUniform3f("lightPos0", GL_FALSE, lightPos0);
+
+	//planet
+
+	Shader planet("planetVertexShader.glsl", "planetFragmentShader.glsl", "planetGeometryShader.glsl");
+
+	Model plan("objFile/planet/planet.obj");
+	updateUniforms(window, planet, position, rotation, scale, camPosition, lightPos0);
+
+	Shader rockShader("rockVertexShader.glsl", "rockFragmentShader.glsl", "");
+
+	Model rock("objFile/rock/rock.obj");
+	updateUniforms(window, rockShader, glm::vec3(-0.5f,0.f,0.f), rotation, scale, camPosition, lightPos0);
+
 
 	while (!glfwWindowShouldClose(window)) {
 		prog_final.Use();
@@ -449,6 +483,8 @@ int main() {
 
 
 		//glBindVertexArray(mesh.getVAO());
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 		nanosuit.Use();
 		nanosuit.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
 		viewMatrix = glm::lookAt(camPosition, camFront, worldUp);
@@ -461,9 +497,31 @@ int main() {
 		//texture0.bind();
 		//nanosuit.setUniform1i("diffTex", texture0.getTextureUnit());
 
-
+		nanosuit.setUniform1f("time", (float)glfwGetTime());
 		nanosuit.Use();
 		mod.Draw(&nanosuit);
+
+
+		planet.Use();
+		planet.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
+		viewMatrix = glm::lookAt(camPosition, camFront, worldUp);
+		planet.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
+		projectionMatrix = glm::mat4(1.f);
+		projectionMatrix = glm::perspective(glm::radians(fov), static_cast<float>(framebufferwidth) / framebufferheight, nearPlane, farPlane);
+		planet.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
+		planet.setUniform3f("camPos", GL_FALSE, camPosition);
+		planet.setUniform3f("lightPos0", GL_FALSE, lightPos0);
+		//texture0.bind();
+		//nanosuit.setUniform1i("diffTex", texture0.getTextureUnit());
+
+
+		planet.Use();
+		planet.setUniform1f("time", (float)glfwGetTime());
+		plan.Draw(&planet);
+
+		rockShader.Use();
+		updateUniforms(window, rockShader, glm::vec3(-0.5f, 0.f, 0.f), rotation, glm::vec3(0.25f), camPosition, lightPos0);
+		rock.Draw(&rockShader);
 
 		/*
 		modelMatrix = glm::mat4(1.f);

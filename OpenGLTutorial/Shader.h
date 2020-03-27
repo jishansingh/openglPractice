@@ -100,8 +100,8 @@ public:
 	}
 	void setUniform1i(const char* un_name, int data) {
 		GLint loc = glGetUniformLocation(this->prog_id, un_name);
-		if (loc < 0||un_name=="material0.diffuseTex") {
-			std::cout << "warning setting uniform " << un_name << " " << data << std::endl;
+		if (loc < 0) {
+			//std::cout << "warning setting uniform " << un_name << " " << data << std::endl;
 		}
 		glUniform1i(loc, data);
 	}
