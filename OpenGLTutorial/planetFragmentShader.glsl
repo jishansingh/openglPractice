@@ -19,7 +19,8 @@ uniform int border;
 
 
 vec4 calcAmbient(){
-	return vec4(0.1f,0.1f,0.1f,1.f);
+	return texture(material0.diffuseTex,gs_texcoord)*vec4(0.5f,0.5f,0.5f,1.f);
+	//return vec4(1.f);
 }
 vec4 calcDiffuse(Material mat,vec3 position,vec3 lightPos,vec3 normal){
 	vec3 norm_normal=normalize(normal);

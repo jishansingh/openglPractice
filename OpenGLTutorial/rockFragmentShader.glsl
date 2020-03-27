@@ -41,9 +41,9 @@ vec4 calcSpecular(Material mat,vec3 position,vec3 lightPos,vec3 normal,vec3 camP
 out vec4 fs_color;
 
 void main(){
-	vec4 ambientFinal=calcAmbient();
-	vec4 diffuseFinal=calcDiffuse(material0,vs_position,lightPos0,vs_normal);
-	vec4 specFinal=calcSpecular(material0,vs_position,lightPos0,vs_normal,camPos);
+	//vec4 ambientFinal=calcAmbient();
+	//vec4 diffuseFinal=calcDiffuse(material0,vs_position,lightPos0,vs_normal);
+	//vec4 specFinal=calcSpecular(material0,vs_position,lightPos0,vs_normal,camPos);
 	//fs_color=(ambientFinal+diffuseFinal+specFinal);
 	fs_color=texture(material0.diffuseTex,vs_texcoord);
 	//fs_color=vec4(vs_texcoord,0.f,1.f);

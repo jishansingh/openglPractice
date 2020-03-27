@@ -5,7 +5,7 @@
 class Model {
 private:
 	std::string directory;
-	std::vector<Mesh>meshes;
+	
 	int count = 0;
 	std::vector<Texture*>loadMaterialTexture(aiMaterial* mat, aiTextureType type,int& cop) {
 		std::vector<Texture*>textures;
@@ -96,6 +96,7 @@ private:
 
 	}
 public:
+	std::vector<Mesh>meshes;
 	Model(const char* path) {
 		loadModel(path);
 	}
@@ -104,5 +105,9 @@ public:
 			meshes[i].Draw(shader);
 		}
 	}
+	std::vector<Texture*> getTexture(int i) {
+		return meshes[i].diffuseTex;
+	}
+
 };
 

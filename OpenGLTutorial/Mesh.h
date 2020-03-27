@@ -5,8 +5,8 @@
 class Mesh {
 private:
 	std::vector<Vertex>vertices;
-	std::vector<unsigned int>indices;
-	std::vector<Texture*>diffuseTex;
+	
+	
 	std::vector<Texture*>specularTex;
 	unsigned int vbo;
 	unsigned int ibo;
@@ -38,6 +38,8 @@ private:
 	}
 
 public:
+	std::vector<Texture*>diffuseTex;
+	std::vector<unsigned int>indices;
 	Mesh(std::vector<Vertex>&vert, std::vector<unsigned int>&index_arr, std::vector<Texture*> diffuse_tex_mat, std::vector<Texture*> specular_tex_mat) {
 		
 		this->vertices = vert;
@@ -64,7 +66,7 @@ public:
 
 		glBindVertexArray(vao);
 
-
+		/*
 		for (int i = 0; i < diffuseTex.size(); i++) {
 			//diffuseTex[i]->bind();
 			shader->Use();
@@ -97,7 +99,8 @@ public:
 		for (int i = 0; i < specularTex.size(); i++) {
 			diffuseTex[i]->bind();
 		}
-		shader->Use();
+		*/
+		//shader->Use();
 
 		//glActiveTexture(GL_TEXTURE0 + diffuseTex[0].getTextureUnit());
 		//shader->setUniform1i("diffTex", diffuseTex[0].getTextureUnit());
@@ -107,8 +110,8 @@ public:
 		//glBindVertexArray(vao);
 		//shader->setUniform1i(("material" + std::to_string(0) + ".specularTex").c_str(), diffuseTex[i]->getTextureUnit());
 		//diffuseTex[0].bind();
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-		//glBindVertexArray(0);
+		glDrawElementsInstanced(GL_TRIANGLES,indices.size(), GL_UNSIGNED_INT, 0, 10000);
+		glBindVertexArray(0);
 
 	}
 	inline unsigned int getVAO() { return vao; }

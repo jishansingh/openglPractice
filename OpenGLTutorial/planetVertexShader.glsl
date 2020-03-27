@@ -25,7 +25,7 @@ void main(){
 	gs_out.vs_normal=vec3(modelMatrix*vec4(aNormal,1.f));
 	//gs_out.vs_position=vec3(modelMatrix*explode(aPosition,vs_normal));
 	gs_out.vs_position=vec3(modelMatrix*vec4(aPosition,1.f));
-	//vs_texcoord=vec2(aTexcoord.x,-1*aTexcoord.y);
+	//gs_out.vs_texcoord=vec2(aTexcoord.x,-1*aTexcoord.y);
 	gs_out.vs_texcoord=aTexcoord;
 	//vs_normal=aNormal;
 	

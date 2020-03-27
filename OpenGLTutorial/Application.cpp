@@ -85,7 +85,8 @@ void updateUniforms(GLFWwindow*window,Shader& shader,glm::vec3 position,glm::vec
 	glm::vec3 camFront(0.f, 0.f, -1.f);
 
 	glm::mat4 viewMatrix(1.f);
-	viewMatrix = glm::lookAt(camPosition, camFront - camPosition, worldUp);
+	glm::vec3 front=glm::cross(glm::cross(worldUp, camPosition), worldUp);
+	viewMatrix = glm::lookAt(camPosition, camFront, worldUp);
 
 	//projection matrix
 	float fov = 90.f;
@@ -99,7 +100,7 @@ void updateUniforms(GLFWwindow*window,Shader& shader,glm::vec3 position,glm::vec
 	projectionMatrix = glm::perspective(glm::radians(fov), static_cast<float>(framebufferwidth) / framebufferheight, nearPlane, farPlane);
 	shader.setUniform3f("camPos", GL_FALSE, camPosition);
 	shader.setUniform3f("lightPos0", GL_FALSE, lightPos0);
-	shader.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
+	//shader.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
 	shader.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
 	shader.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
 }
@@ -107,17 +108,17 @@ void updateUniforms(GLFWwindow*window,Shader& shader,glm::vec3 position,glm::vec
 
 void updateInput(GLFWwindow* window, glm::vec3& positon) {
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		positon.z -= 0.001f;
+		positon.z -= 0.1f;
 	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		positon.z += 0.001f;
+		positon.z += 0.1f;
 	else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		positon.x += 0.001f;
+		positon.x += 0.1f;
 	else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		positon.x -= 0.001f;
+		positon.x -= 0.1f;
 	else if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-		positon.y += 0.001f;
+		positon.y += 0.1f;
 	else if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-		positon.y -= 0.001f;
+		positon.y -= 0.1f;
 }
 
 int main() {
@@ -262,7 +263,7 @@ int main() {
 	//prog_final.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
 	
 	//set uniform for lightening
-	glm::vec3 lightPos0(1.f, 0.f, 1.f);
+	glm::vec3 lightPos0(0.f, 2.f, 3.f);
 	prog_final.setUniform3f("camPos",GL_FALSE, camPosition);
 	prog_final.setUniform3f("lightPos0", GL_FALSE, lightPos0);
 
@@ -414,6 +415,100 @@ int main() {
 	updateUniforms(window, rockShader, glm::vec3(-0.5f,0.f,0.f), rotation, scale, camPosition, lightPos0);
 
 
+	/*
+	const int amount = 10;
+	glm::mat4* matrices;
+	srand(glfwGetTime());
+	matrices =new glm::mat4[amount];
+
+	int radius = 0.f;
+	int offset = 1.f;
+
+
+	for (int i = 0; i < amount; i++) {
+		glm::mat4 mat= glm::mat4(1.f);
+		glm::vec3 pos;
+		float angle = (float)i / (float)amount * 360.f;
+		float displacement = (rand() % (2 * offset * 100)) / 100.f - offset;
+		pos.x = sin(angle) * radius + displacement;
+		displacement = (rand() % (2 * offset * 100)) / 100.f - offset;
+		pos.z = cos(angle) * radius + displacement;
+		displacement = (rand() % (2 * offset * 100)) / 100.f - offset;
+		pos.y = displacement*0.4f;
+		mat = glm::translate(mat, pos);
+		mat = glm::rotate(mat, glm::radians(rotation.x), glm::vec3(1.f, 0.f, 0.f));
+		mat = glm::rotate(mat, glm::radians(rotation.y), glm::vec3(0.f, 1.f, 0.f));
+		mat = glm::rotate(mat, glm::radians(rotation.z), glm::vec3(0.f, 0.f, 1.f));
+
+		
+		int sc= (rand() % (100)) / 1000.f;
+		glm::vec3 scale_rock(sc);
+		mat = glm::scale(mat, scale_rock);
+		matrices[i] = mat;
+	}
+	*/
+	unsigned int amount = 10000;
+	glm::mat4* modelMatrices;
+	modelMatrices = new glm::mat4[amount];
+	srand(glfwGetTime()); // initialize random seed	
+	float radius = 10.f;
+	float offset = 2.5f;
+
+	for (unsigned int i = 0; i < amount; i++)
+	{
+		glm::mat4 model = glm::mat4(1.0f);
+		// 1. translation: displace along circle with 'radius' in range [-offset, offset]
+		float angle = (float)i / (float)amount * 360.0f;
+		float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float x = sin(angle) * radius + displacement;
+		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float y = displacement * 0.4f; // keep height of field smaller compared to width of x and z
+		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float z = cos(angle) * radius + displacement;
+		model = glm::translate(model, glm::vec3(x, y, z));
+
+		// 2. scale: scale between 0.05 and 0.25f
+		float scale = (rand() % 20) / 100.0f + 0.05;
+		model = glm::scale(model, glm::vec3(scale));
+
+		// 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector
+		float rotAngle = (rand() % 360);
+		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+
+		// 4. now add to list of matrices
+		modelMatrices[i] = model;
+	}
+
+
+	rockShader.Use();
+	unsigned int buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+
+	for (int i = 0; i < rock.meshes.size(); i++) {
+		glBindVertexArray(rock.meshes[i].getVAO());
+
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+		glEnableVertexAttribArray(5);
+		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2*sizeof(glm::vec4)));
+		glEnableVertexAttribArray(6);
+		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3*sizeof(glm::vec4)));
+
+		glVertexAttribDivisor(3, 1);
+		glVertexAttribDivisor(4, 1);
+		glVertexAttribDivisor(5, 1);
+		glVertexAttribDivisor(6, 1);
+
+	}
+
+	
+
+
 	while (!glfwWindowShouldClose(window)) {
 		prog_final.Use();
 		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
@@ -481,7 +576,7 @@ int main() {
 		prog_normal.setUniform1f("time", (float)glfwGetTime());
 		glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
 
-
+		/*
 		//glBindVertexArray(mesh.getVAO());
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -500,28 +595,43 @@ int main() {
 		nanosuit.setUniform1f("time", (float)glfwGetTime());
 		nanosuit.Use();
 		mod.Draw(&nanosuit);
+		*/
 
+		//planet.Use();
+		//updateUniforms(window, planet, glm::vec3(0.f), glm::vec3(0.f), glm::vec3(1.f), camPosition, lightPos0);
+		//planet.Use();
+		////planet.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
+		//planet.setUniform1f("time", (float)glfwGetTime());
+		//plan.Draw(&planet);
 
-		planet.Use();
-		planet.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
-		viewMatrix = glm::lookAt(camPosition, camFront, worldUp);
-		planet.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
-		projectionMatrix = glm::mat4(1.f);
-		projectionMatrix = glm::perspective(glm::radians(fov), static_cast<float>(framebufferwidth) / framebufferheight, nearPlane, farPlane);
-		planet.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
-		planet.setUniform3f("camPos", GL_FALSE, camPosition);
-		planet.setUniform3f("lightPos0", GL_FALSE, lightPos0);
-		//texture0.bind();
-		//nanosuit.setUniform1i("diffTex", texture0.getTextureUnit());
-
-
-		planet.Use();
-		planet.setUniform1f("time", (float)glfwGetTime());
-		plan.Draw(&planet);
-
+		
+		//updateUniforms(window, rockShader, glm::vec3(-0.5f, 0.f, 0.f), rotation, glm::vec3(0.15f), camPosition, lightPos0);
 		rockShader.Use();
-		updateUniforms(window, rockShader, glm::vec3(-0.5f, 0.f, 0.f), rotation, glm::vec3(0.25f), camPosition, lightPos0);
+		updateUniforms(window, rockShader, glm::vec3(-0.5f, 0.f, 0.f), rotation, glm::vec3(0.15f), camPosition, lightPos0);
+		
+		glActiveTexture(GL_TEXTURE0+ rock.getTexture(0)[0]->getTextureUnit());
+		rockShader.setUniform1i("material0.diffuseTex", rock.getTexture(0)[0]->getTextureUnit());
+		
+		glBindTexture(GL_TEXTURE_2D, rock.getTexture(0)[0]->getID());
+		rockShader.Use();
 		rock.Draw(&rockShader);
+		
+		/*
+		rockShader.Use();
+		updateUniforms(window, rockShader, glm::vec3(-0.5f, 0.f, 0.f), rotation, glm::vec3(0.15f), camPosition, lightPos0);
+		rockShader.setUniform1i("material0.diffuseTex", rock.getTexture(0)[0]->getTextureUnit());
+		glActiveTexture(GL_TEXTURE0+ rock.getTexture(0)[0]->getTextureUnit());
+		glBindTexture(GL_TEXTURE_2D, rock.getTexture(0)[0]->getID()); // note: we also made the textures_loaded vector public (instead of private) from the model class.
+		for (unsigned int i = 0; i < rock.meshes.size(); i++)
+		{
+			glBindVertexArray(rock.meshes[i].getVAO());
+			glDrawElementsInstanced(GL_TRIANGLES, rock.meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount);
+			glBindVertexArray(0);
+		}*/
+
+		
+		//updateUniforms(window, rockShader, glm::vec3(0.5f, 0.f, 0.f), rotation, glm::vec3(0.25f), camPosition, lightPos0);
+		//rock.Draw(&rockShader);
 
 		/*
 		modelMatrix = glm::mat4(1.f);
@@ -538,6 +648,7 @@ int main() {
 		*/
 
 		glfwSwapBuffers(window);
+		//glfwPollEvents();
 	}
 	glfwTerminate();
 	return 0;
