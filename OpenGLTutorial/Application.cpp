@@ -468,7 +468,7 @@ int main() {
 		model = glm::translate(model, glm::vec3(x, y, z));
 
 		// 2. scale: scale between 0.05 and 0.25f
-		float scale = (rand() % 20) / 100.0f + 0.05;
+		float scale = (rand() % 100) / 1000.0f + 0.05;
 		model = glm::scale(model, glm::vec3(scale));
 
 		// 3. rotation: add random rotation around a (semi)randomly picked rotation axis vector

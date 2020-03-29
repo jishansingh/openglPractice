@@ -28,7 +28,7 @@ public:
 
 
 		if (image) {
-			glTexImage2D(type, 0, GL_RGBA, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+			glTexImage2D(type, 0, GL_SRGB, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 			glGenerateMipmap(type);
 		}
 		else {
