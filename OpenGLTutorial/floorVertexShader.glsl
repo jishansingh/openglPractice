@@ -6,6 +6,7 @@ layout (location=2) in vec2 aTexcoord;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
+uniform mat4 lightMatrix;
 /*
 out VS_OUT{
 	vec3 vs_position;
@@ -17,11 +18,13 @@ out VS_OUT{
 out vec3 vs_position;
 out vec3 vs_normal;
 out vec2 vs_texcoord;
+out vec4 vs_lightPos;
 void main(){
 	vs_normal=vec3(modelMatrix*vec4(aNormal,1.f));
 
 	vs_position=vec3(modelMatrix*vec4(aPosition,1.f));
 
+	vs_lightPos=lightMatrix*modelMatrix*vec4(aPosition,1.f);
 	vs_texcoord=aTexcoord;
 	//vs_normal=aNormal;
 	
