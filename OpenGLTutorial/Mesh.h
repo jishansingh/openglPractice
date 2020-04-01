@@ -44,7 +44,8 @@ public:
 		
 		this->vertices = vert;
 		this->indices = index_arr;
-		this->diffuseTex.insert(this->diffuseTex.end(), diffuse_tex_mat.begin(), diffuse_tex_mat.end());
+		this->diffuseTex = diffuse_tex_mat;
+		//this->diffuseTex.insert(this->diffuseTex.end(), diffuse_tex_mat.begin(), diffuse_tex_mat.end());
 		this->specularTex = specular_tex_mat;
 		/*for (int i = 0; i < vert.size(); i++) {
 			vertices.push_back(vert[i]);
@@ -66,7 +67,7 @@ public:
 
 		glBindVertexArray(vao);
 
-		/*
+		
 		for (int i = 0; i < diffuseTex.size(); i++) {
 			//diffuseTex[i]->bind();
 			shader->Use();
@@ -97,11 +98,11 @@ public:
 			diffuseTex[i]->bind();
 		}
 		for (int i = 0; i < specularTex.size(); i++) {
-			diffuseTex[i]->bind();
+			specularTex[i]->bind();
 		}
-		*/
-		//shader->Use();
-
+		
+		shader->Use();
+		glBindVertexArray(vao);
 		//glActiveTexture(GL_TEXTURE0 + diffuseTex[0].getTextureUnit());
 		//shader->setUniform1i("diffTex", diffuseTex[0].getTextureUnit());
 		//glBindTexture(GL_TEXTURE_2D, diffuseTex[0].getID());
@@ -110,7 +111,8 @@ public:
 		//glBindVertexArray(vao);
 		//shader->setUniform1i(("material" + std::to_string(0) + ".specularTex").c_str(), diffuseTex[i]->getTextureUnit());
 		//diffuseTex[0].bind();
-		glDrawElementsInstanced(GL_TRIANGLES,indices.size(), GL_UNSIGNED_INT, 0, 10000);
+		//glDrawElementsInstanced(GL_TRIANGLES,indices.size(), GL_UNSIGNED_INT, 0, 10000);
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
 	}

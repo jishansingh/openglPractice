@@ -25,7 +25,7 @@ vec4 explode(vec3 position,vec3 normal){
 vec4 explode(vec4 position, vec3 normal)
 {
     float magnitude = 2.0;
-    vec3 direction = normal * ((sin(time) + 1.0) / 2.0) * magnitude; 
+    vec3 direction = normal * ((sin(0) + 1.0) / 2.0) * magnitude; 
     //return position + vec4(direction, 0.0);
 	return position;
 }
@@ -39,17 +39,17 @@ void main(){
 	vec3 normal=GetNormal();
 	gl_Position=explode(gl_in[0].gl_Position, normal);
 	gs_texcoord=gs_in[0].vs_texcoord;
-	gs_normal = gs_in[0].vs_normal;
+	gs_normal = normal;
 	gs_position=gs_in[0].vs_position;
 	EmitVertex();
 	gl_Position=explode(gl_in[1].gl_Position, normal);
 	gs_texcoord=gs_in[1].vs_texcoord;
-	gs_normal = gs_in[1].vs_normal;
+	gs_normal = normal;
 	gs_position=gs_in[1].vs_position;
 	EmitVertex();
 	gl_Position=explode(gl_in[2].gl_Position, normal);
 	gs_texcoord=gs_in[2].vs_texcoord;
-	gs_normal = gs_in[2].vs_normal;
+	gs_normal = normal;
 	gs_position=gs_in[2].vs_position;
 	EmitVertex();
 	EndPrimitive();
