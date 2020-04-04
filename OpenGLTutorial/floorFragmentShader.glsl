@@ -38,20 +38,42 @@ vec4 calcSpecular(vec3 position,vec3 lightPos,vec3 normal,vec3 camPosition){
 	return spec_final;
 }
 
-float calcShadow(vec4 position){
-	vec3 projCoords=position.xyz;
-	projCoords=projCoords*0.5+0.5;
+float LinearizeDepth(float depth)
+{
+    float z = depth * 2.0 - 1.0; // Back to NDC 
+	float near_plane=0.1f;
+	float far_plane=100.f;
+    return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
+}
 
-	float closestDepth = texture(depthMap, projCoords.xy).r; 
-    // get depth of current fragment from light's perspective
-    float currentDepth = projCoords.z;
-    // check whether current frag pos is in shadow
-	float bias=-0.005;
-    float shadow = currentDepth+bias > closestDepth  ? 1.0 : 0.0;
+float calcShadow(vec4 position){
+	vec3 projCoords=position.xyz/position.w;
+	projCoords=projCoords*0.5+0.5;
+	float depthObj=projCoords.z;
+	float shadow = 0.0;
+	vec2 texelSize=1.0/textureSize(depthMap,0);
+	for(int x=-1;x<=1;x++){
+		for(int y=-1;y<=1;y++){
+			vec2 tex_cord=projCoords.xy+vec2(x,y)*texelSize;
+			float closestDepth=texture(depthMap,tex_cord).r;
+			shadow += depthObj > closestDepth? 1 : 0;
+		}
+	}
+	shadow=shadow/9;
 
     return shadow;
 
 }
+
+float calcFrag(vec4 pos){
+	vec3 projCoord=pos.xyz/pos.w;
+	float closestDepth=texture(depthMap,projCoord.xy).r;
+	closestDepth=LinearizeDepth(closestDepth)/100.f;
+	float depthObj=LinearizeDepth(pos.z)/100.f;
+	float shadow =  depthObj-0.5 > closestDepth ? 1 : 0;
+	return shadow;
+}
+
 
 void main(){
 	vec4 ambientFinal=calcAmbient();
@@ -61,9 +83,10 @@ void main(){
 	//vec3 gamma=vec3(1.f/2.2f);
 	//fs_color=vec4(pow(fin_color.rgb,gamma),1.f);
 	float shadow=calcShadow(vs_lightPos);
-	//fs_color=vec4(vec3(texture(depthMap,vs_texcoord).r),1.f);
+	//fs_color=vec4(vec3(LinearizeDepth(texture(depthMap,vs_texcoord).r)/100.f),1.f);
 	fs_color=texture(diffTex,vs_texcoord)*(ambientFinal+(1-shadow)*(diffuseFinal+specFinal));
 	//fs_color=vec4(1.f,0.f,0.f,1.f);
+	//fs_color=
 }
 
 

@@ -7,13 +7,14 @@ in VS_OUT{
 	vec3 vs_position;
 	vec3 vs_normal;
 	vec2 vs_texcoord;
+	vec4 vs_lightPos;
 } gs_in[];
 
 uniform float time;
 out vec3 gs_position;
 out vec3 gs_normal;
 out vec2 gs_texcoord;
-
+out vec4 gs_lightPos;
 /*
 vec4 explode(vec3 position,vec3 normal){
 	float move=(sin(time)+1.f)/2.f;
@@ -39,17 +40,23 @@ void main(){
 	vec3 normal=GetNormal();
 	gl_Position=explode(gl_in[0].gl_Position, normal);
 	gs_texcoord=gs_in[0].vs_texcoord;
-	gs_normal = normal;
+	//gs_normal = normal;
+	gs_normal=gs_in[0].vs_normal;
+	gs_lightPos=gs_in[0].vs_lightPos;
 	gs_position=gs_in[0].vs_position;
 	EmitVertex();
 	gl_Position=explode(gl_in[1].gl_Position, normal);
 	gs_texcoord=gs_in[1].vs_texcoord;
-	gs_normal = normal;
+	//gs_normal = normal;
+	gs_normal=gs_in[1].vs_normal;
+	gs_lightPos=gs_in[1].vs_lightPos;
 	gs_position=gs_in[1].vs_position;
 	EmitVertex();
 	gl_Position=explode(gl_in[2].gl_Position, normal);
 	gs_texcoord=gs_in[2].vs_texcoord;
-	gs_normal = normal;
+	//gs_normal = normal;
+	gs_normal=gs_in[2].vs_normal;
+	gs_lightPos=gs_in[2].vs_lightPos;
 	gs_position=gs_in[2].vs_position;
 	EmitVertex();
 	EndPrimitive();

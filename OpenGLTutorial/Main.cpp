@@ -3,7 +3,7 @@
 #include"Texture.h"
 #include"Mesh.h"
 #include"Model.h"
-
+#include"frameBuffer.h"
 
 void framebuffer_resize_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -51,8 +51,8 @@ unsigned int noOfBoxVertices2 = sizeof(quadVertices) /(5* sizeof(float));
 unsigned int noOfBoxVertices = sizeof(vertices_box) / (3 * sizeof(float));
 
 GLuint indices[] = {
-	0,1,2,
-	0,2,3
+	2,1,0,
+	3,2,0
 };
 unsigned int noOfIndices = sizeof(indices) / sizeof(GLuint);
 
@@ -139,13 +139,14 @@ void updateUniforms(GLFWwindow* window, Shader& shader, glm::vec3 position, glm:
 	shader.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
 	shader.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
 	shader.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
-
+		
 	//float near_plane = 0.1f, far_plane = 100.5f;
 
-	viewMatrix = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f),
+	viewMatrix = glm::lookAt(lightPos0,
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f));
-	projectionMatrix = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
+
+	//projectionMatrix = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
 
 	projectionMatrix = projectionMatrix * viewMatrix;
 	shader.setUniformMatrix4fv("lightMatrix", GL_FALSE, projectionMatrix);
@@ -167,7 +168,7 @@ void updateShadow(GLFWwindow* window, Shader& shader, glm::vec3 position, glm::v
 
 	glm::mat4 viewMatrix(1.f);
 	glm::vec3 front = glm::cross(glm::cross(worldUp, camPosition), worldUp);
-	viewMatrix = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f),
+	viewMatrix = glm::lookAt(lightPos0,
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f));
 	//viewMatrix = glm::lookAt(camPosition, camFront, worldUp);
@@ -178,15 +179,20 @@ void updateShadow(GLFWwindow* window, Shader& shader, glm::vec3 position, glm::v
 	float fov = 90.f;
 	float nearPlane = 0.1f;
 	float farPlane = 100.f;
-
 	/*glm::mat4 projectionMatrix(1.f);
 	int framebufferwidth;
 	int framebufferheight;
 	glfwGetFramebufferSize(window, &framebufferwidth, &framebufferheight);
 	projectionMatrix = glm::perspective(glm::radians(fov), static_cast<float>(framebufferwidth) / framebufferheight, nearPlane, farPlane);*/
 
-	float near_plane = 0.1f, far_plane = 100.5f;
-	glm::mat4 projectionMatrix = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+	glm::mat4 projectionMatrix(1.f);
+	int framebufferwidth;
+	int framebufferheight;
+	glfwGetFramebufferSize(window, &framebufferwidth, &framebufferheight);
+	projectionMatrix = glm::perspective(glm::radians(fov), static_cast<float>(framebufferwidth) / framebufferheight, nearPlane, farPlane);
+
+	/*float near_plane = 0.1f, far_plane = 100.5f;
+	glm::mat4 projectionMatrix = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);*/
 
 	shader.setUniform3f("camPos", GL_FALSE, camPosition);
 	shader.setUniform3f("lightPos0", GL_FALSE, lightPos0);
@@ -326,13 +332,13 @@ int main() {
 
 	Shader prog_final("floorVertexShader.glsl", "floorFragmentShader.glsl", "");
 	Texture texture0("images/floor.png", GL_TEXTURE_2D, 0);
-	glm::vec3 camPosition(0.f, 0.f, 1.f);
+	glm::vec3 camPosition(0.f, 4.0f, 1.0f);
 	glm::vec3 position(0.f, 0.f, 2.f);
 	glm::vec3 rotation(10.f, 10.f, 0.f);
 	glm::vec3 scale(20.f);
 	glm::vec3 worldUp(0.f, 1.f, 0.f);
 	glm::vec3 camFront(0.f, 0.f, 0.f);
-	glm::vec3 lightPos(0.f, 4.f, 0.f);
+	glm::vec3 lightPos(-2.0f, 10.0f, 4.0f);
 	//prog_final.Use();
 	/*glBindVertexArray(0);
 	unsigned int vao1;
@@ -417,25 +423,12 @@ int main() {
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	//glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-
-	unsigned int depthMapFBO;
-	glGenFramebuffers(1, &depthMapFBO);
 	int SHADOW_HEIGHT = 1024;
 	int SHADOW_WIDTH = 1024;
-	unsigned int depthMap;
-	glGenTextures(1, &depthMap);
-	glBindTexture(GL_TEXTURE_2D, depthMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT,GL_FLOAT,NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	frameBuffer depthMapFBO(SHADOW_WIDTH, SHADOW_HEIGHT);
+
+	depthMapFBO.unBindBuffer();
 
 	//prog_final.Use();
 	prog_final.setUniform1i("texture0", 0);
@@ -450,33 +443,47 @@ int main() {
 
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+		glFrontFace(GL_CCW);
 		glfwPollEvents();
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		depthMapFBO.bindBuffer();
 		glClear(GL_DEPTH_BUFFER_BIT);
 		updateInput(window, camPosition, camFront, worldUp);
 		simple.Use();
 		updateShadow(window, simple, glm::vec3(0.f, 0.5f, 0.f), glm::vec3(0.f), glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
 		simple.Use();
+		depthMapFBO.bindMe();
 		//planet.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
 		simple.setUniform1f("time", (float)glfwGetTime());
 		plan.Draw(&simple);
 
+		updateShadow(window, simple, glm::vec3(-1.f, 14.f, 0.f), rotation, glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
+		depthMapFBO.bindMe();
+		plan.Draw(&simple);
+		
 		simple.Use();
+
 		updateShadow(window, simple, position, rotation, scale, camPosition, lightPos, camFront, worldUp);
 		simple.Use();
+		depthMapFBO.bindMe();
 		//texture0.bind();
 		//simple.setUniform1i("diffTex", texture0.getTextureUnit());
 		glBindVertexArray(vao);
 		glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
 
+		//updateShadow(window, simple, position + glm::vec3(0.25f, 0.f, 0.f), rotation, scale, camPosition, lightPos, camFront, worldUp);
+		//glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
 
-		
+
+		// render
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-		
+		glDisable(GL_CULL_FACE);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glfwPollEvents();
@@ -486,8 +493,22 @@ int main() {
 		shad.Use();
 		//planet.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
 		shad.setUniform1f("time", (float)glfwGetTime());
+		shad.setUniform1i("depthMap", 3);
+		depthMapFBO.bindTexture(3);
+		plan.Draw(&shad);
+		updateInput(window, camPosition, camFront, worldUp);
+
+		updateUniforms(window, shad, glm::vec3(-1.f, 5.f, 0.f), rotation, glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
+		shad.setUniform1i("depthMap", 3);
+		depthMapFBO.bindTexture(3);
 		plan.Draw(&shad);
 
+		updateInput(window, camPosition, camFront, worldUp);
+		/*glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+		glFrontFace(GL_CCW);*/
+		updateUniforms(window, shad, lightPos, rotation, glm::vec3(0.25f), camPosition, lightPos, camFront, worldUp);
+		plan.Draw(&shad);
 		//glEnable(GL_STENCIL_TEST);
 		//glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 		/*glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -497,8 +518,7 @@ int main() {
 		prog_final.Use();
 		
 		prog_final.setUniform1i("depthMap", 1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, depthMap);
+		depthMapFBO.bindTexture(1);
 		updateUniforms(window, prog_final, position, rotation, scale, camPosition, lightPos, camFront, worldUp);
 		prog_final.Use();
 		texture0.bind();
@@ -507,6 +527,8 @@ int main() {
 		//glBindTexture(GL_TEXTURE_2D, depthMap);
 		glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
 		
+		//updateUniforms(window, prog_final, position + glm::vec3(0.25f, 0.f, 0.f), rotation, scale, camPosition, lightPos, camFront, worldUp);
+		//glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
 		
 		/*
 		//glfwPollEvents();

@@ -6,13 +6,14 @@ layout(location=2) in vec2 aTexcoord;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
-
+uniform mat4 lightMatrix;
 uniform float time;
 
 out VS_OUT{
 	vec3 vs_position;
 	vec3 vs_normal;
 	vec2 vs_texcoord;
+	vec4 vs_lightPos;
 } gs_out;
 
 out vec3 vs_position;
@@ -27,6 +28,8 @@ void main(){
 	gs_out.vs_position=vec3(modelMatrix*vec4(aPosition,1.f));
 	//gs_out.vs_texcoord=vec2(aTexcoord.x,-1*aTexcoord.y);
 	gs_out.vs_texcoord=aTexcoord;
+
+	gs_out.vs_lightPos=lightMatrix*(modelMatrix*vec4(aPosition,1.f));
 	//vs_normal=aNormal;
 	
 	//gl_Position=projectionMatrix*viewMatrix*(modelMatrix*explode(aPosition,aNormal));
