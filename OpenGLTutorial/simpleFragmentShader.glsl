@@ -1,4 +1,6 @@
-#version 330 core
+#version 440 core
+in vec4 FragPos;
+
 /*
 float LinearizeDepth(float depth)
 {
@@ -7,6 +9,7 @@ float LinearizeDepth(float depth)
     float far_plane=100.f;
     return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
 }
+
 void main()
 {             
     float depthValue = texture(depthMap, TexCoords).r;
@@ -15,7 +18,12 @@ void main()
 }  
 */
 
+uniform vec3 lightPos0;
+
 void main()
-{             
+{
+    float lightDistance=length(FragPos.xyz-lightPos0);
+    lightDistance=lightDistance/100.f;
+    gl_FragDepth = lightDistance;
     //gl_FragDepth = LinearizeDepth(gl_FragCoord.z)/100.f;
 }

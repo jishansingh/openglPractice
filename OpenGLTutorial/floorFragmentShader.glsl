@@ -5,8 +5,10 @@ in vec3 vs_normal;
 in vec2 vs_texcoord;
 in vec4 vs_lightPos;
 
-uniform sampler2D depthMap;
+	
 uniform sampler2D diffTex;
+
+uniform samplerCube depthMap;
 
 uniform vec3 camPos;
 uniform vec3 lightPos0;
@@ -46,20 +48,29 @@ float LinearizeDepth(float depth)
     return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
 }
 
-float calcShadow(vec4 position){
-	vec3 projCoords=position.xyz/position.w;
-	projCoords=projCoords*0.5+0.5;
-	float depthObj=projCoords.z;
+float calcShadow(vec3 position){
+	vec3 projCoords=position;
+	//vec3 projCoords=position.xyz/position.w;
+	//projCoords=projCoords*0.5+0.5;
+	
 	float shadow = 0.0;
-	vec2 texelSize=1.0/textureSize(depthMap,0);
+	//vec2 texelSize=1.0/textureSize(depthMap,0);
+	/*
 	for(int x=-1;x<=1;x++){
 		for(int y=-1;y<=1;y++){
 			vec2 tex_cord=projCoords.xy+vec2(x,y)*texelSize;
 			float closestDepth=texture(depthMap,tex_cord).r;
 			shadow += depthObj > closestDepth? 1 : 0;
 		}
-	}
-	shadow=shadow/9;
+	}*/
+
+	 vec3 fragToLight = projCoords - lightPos0; 
+	 float depthObj=length(fragToLight);
+    float closestDepth = texture(depthMap, fragToLight).r;
+	closestDepth = closestDepth*100.f;
+	//float closestDepth=texture(depthMap,projCoords).r;
+
+	shadow=depthObj-0.5 > closestDepth? 1 : 0;
 
     return shadow;
 
@@ -67,7 +78,7 @@ float calcShadow(vec4 position){
 
 float calcFrag(vec4 pos){
 	vec3 projCoord=pos.xyz/pos.w;
-	float closestDepth=texture(depthMap,projCoord.xy).r;
+	float closestDepth=texture(depthMap,projCoord.xyz).r;
 	closestDepth=LinearizeDepth(closestDepth)/100.f;
 	float depthObj=LinearizeDepth(pos.z)/100.f;
 	float shadow =  depthObj-0.5 > closestDepth ? 1 : 0;
@@ -82,9 +93,10 @@ void main(){
 	//fs_color=texture(diffTex,vs_texcoord)*(ambientFinal+diffuseFinal+specFinal);
 	//vec3 gamma=vec3(1.f/2.2f);
 	//fs_color=vec4(pow(fin_color.rgb,gamma),1.f);
-	float shadow=calcShadow(vs_lightPos);
-	//fs_color=vec4(vec3(LinearizeDepth(texture(depthMap,vs_texcoord).r)/100.f),1.f);
-	fs_color=texture(diffTex,vs_texcoord)*(ambientFinal+(1-shadow)*(diffuseFinal+specFinal));
+	//float shadow=calcShadow(vs_position);
+	vec3 fragToLight = vs_position - lightPos0;
+	fs_color=vec4(vec3(texture(depthMap,fragToLight).r*100.f),1.f);
+	//fs_color=texture(diffTex,vs_texcoord)*(ambientFinal+(1-shadow)*(diffuseFinal+specFinal));
 	//fs_color=vec4(1.f,0.f,0.f,1.f);
 	//fs_color=
 }

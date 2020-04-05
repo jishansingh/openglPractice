@@ -8,7 +8,8 @@ struct Material{
 	sampler2D specularTex;
 };
 
-uniform sampler2D depthMap;
+//uniform sampler2D depthMap;
+uniform samplerCube depthMap;
 
 uniform Material material0;
 uniform Material material1;
@@ -46,6 +47,7 @@ float calcShadow(vec4 position){
 	projCoords=projCoords*0.5+0.5;
 	float depthObj=projCoords.z;
 	float shadow = 0.0;
+	/*
 	vec2 texelSize=1.0/textureSize(depthMap,0);
 	for(int x=-1;x<=1;x++){
 		for(int y=-1;y<=1;y++){
@@ -55,6 +57,7 @@ float calcShadow(vec4 position){
 		}
 	}
 	shadow=shadow/9;
+	*/
 
     return shadow;
 
@@ -66,8 +69,8 @@ void main(){
 	vec4 ambientFinal=calcAmbient();
 	vec4 diffuseFinal=calcDiffuse(material0,gs_position,lightPos0,gs_normal);
 	vec4 specFinal=calcSpecular(material0,gs_position,lightPos0,gs_normal,camPos);
-	float shadow=calcShadow(vs_lightPos);
+	//float shadow=calcShadow(vs_lightPos);
 
-	fs_color=(ambientFinal+(1-shadow)*(diffuseFinal+specFinal));
+	fs_color=(ambientFinal+(1)*(diffuseFinal+specFinal));
 	//fs_color=vec4(gs_texcoord,0.f,1.f);
 }

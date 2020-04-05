@@ -199,6 +199,28 @@ void updateShadow(GLFWwindow* window, Shader& shader, glm::vec3 position, glm::v
 	shader.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
 	shader.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
 	shader.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
+
+	std::vector<glm::mat4> shadowTransforms;
+	shadowTransforms.push_back(projectionMatrix *
+		glm::lookAt(lightPos0, lightPos0 + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+	shadowTransforms.push_back(projectionMatrix *
+		glm::lookAt(lightPos0, lightPos0 + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+	shadowTransforms.push_back(projectionMatrix *
+		glm::lookAt(lightPos0, lightPos0 + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+	shadowTransforms.push_back(projectionMatrix *
+		glm::lookAt(lightPos0, lightPos0 + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+	shadowTransforms.push_back(projectionMatrix *
+		glm::lookAt(lightPos0, lightPos0 + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
+	shadowTransforms.push_back(projectionMatrix *
+		glm::lookAt(lightPos0, lightPos0 + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
+
+
+	for (int i = 0; i < 6; i++) {
+		std::string temp = "shadowMatrices[" + std::to_string(i) + "]";
+		shader.setUniformMatrix4fv(temp.c_str(), GL_FALSE, shadowTransforms[i]);
+	}
+	
+
 }
 
 
@@ -423,6 +445,9 @@ int main() {
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	//glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
+
+
+
 	int SHADOW_HEIGHT = 1024;
 	int SHADOW_WIDTH = 1024;
 
@@ -438,7 +463,7 @@ int main() {
 
 	Model plan("objFile/planet/planet.obj");
 
-	Shader simple("simpleVertexShader.glsl", "simpleFragmentShader.glsl", "");
+	Shader simple("simpleVertexShader.glsl", "simpleFragmentShader.glsl", "simpleGeometryShader.glsl");
 
 
 	while (!glfwWindowShouldClose(window)) {
@@ -449,7 +474,7 @@ int main() {
 		glfwPollEvents();
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		depthMapFBO.bindBuffer();
-		glClear(GL_DEPTH_BUFFER_BIT);
+		//glClear(GL_DEPTH_BUFFER_BIT);
 		updateInput(window, camPosition, camFront, worldUp);
 		simple.Use();
 		updateShadow(window, simple, glm::vec3(0.f, 0.5f, 0.f), glm::vec3(0.f), glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
