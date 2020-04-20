@@ -42,6 +42,9 @@ public:
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthMap, 0);
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 	
@@ -56,6 +59,7 @@ public:
 		glBindTexture(type, depthMap);
 	}
 	inline void bindMe() {
+		//GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
 		glBindTexture(type, depthMap);
 	}
 

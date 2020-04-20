@@ -250,6 +250,18 @@ void updateInput(GLFWwindow* window, glm::vec3& positon,glm::vec3& cameraFront,g
 		positon.y += 0.01f;
 	else if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
 		positon.y -= 0.01f;
+	else if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+		cameraFront.z += 0.01f;
+	else if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+		cameraFront.z -= 0.01f;
+	else if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+		cameraFront.y += 0.01f;
+	else if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+		cameraFront.y -= 0.01f;
+	else if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+		cameraFront.x += 0.01f;
+	else if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+		cameraFront.x -= 0.01f;
 }
 
 int main() {
@@ -353,14 +365,14 @@ int main() {
 
 
 	Shader prog_final("floorVertexShader.glsl", "floorFragmentShader.glsl", "");
-	Texture texture0("images/floor.png", GL_TEXTURE_2D, 0);
+	Texture texture0("images/floor.png", GL_TEXTURE_2D, 1);
 	glm::vec3 camPosition(0.f, 4.0f, 1.0f);
 	glm::vec3 position(0.f, 0.f, 2.f);
 	glm::vec3 rotation(10.f, 10.f, 0.f);
-	glm::vec3 scale(20.f);
+	glm::vec3 scale(30.f);
 	glm::vec3 worldUp(0.f, 1.f, 0.f);
 	glm::vec3 camFront(0.f, 0.f, 0.f);
-	glm::vec3 lightPos(-2.0f, 10.0f, 4.0f);
+	glm::vec3 lightPos(-2.0f, 10.0f, 1.0f);
 	//prog_final.Use();
 	/*glBindVertexArray(0);
 	unsigned int vao1;
@@ -465,37 +477,41 @@ int main() {
 
 	Shader simple("simpleVertexShader.glsl", "simpleFragmentShader.glsl", "simpleGeometryShader.glsl");
 
+	Shader prog_box("cube3Dvertexshader.glsl", "cube3Dfragmentshader.glsl", "cube3DgeometryShader.glsl");
+	
 
 	while (!glfwWindowShouldClose(window)) {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
 		glFrontFace(GL_CCW);
 		glfwPollEvents();
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		depthMapFBO.bindBuffer();
-		//glClear(GL_DEPTH_BUFFER_BIT);
-		updateInput(window, camPosition, camFront, worldUp);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		updateInput(window, camPosition, lightPos, worldUp);
 		simple.Use();
 		updateShadow(window, simple, glm::vec3(0.f, 0.5f, 0.f), glm::vec3(0.f), glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
 		simple.Use();
-		depthMapFBO.bindMe();
+		//depthMapFBO.bindMe();
 		//planet.setUniformMatrix4fv("modelMatrix", GL_FALSE, modelMatrix);
 		simple.setUniform1f("time", (float)glfwGetTime());
 		plan.Draw(&simple);
 
-		updateShadow(window, simple, glm::vec3(-1.f, 14.f, 0.f), rotation, glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
-		depthMapFBO.bindMe();
+		updateShadow(window, simple, glm::vec3(-1.f, 9.f, 0.f), rotation, glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
+		//depthMapFBO.bindMe();
 		plan.Draw(&simple);
 		
 		simple.Use();
 
 		updateShadow(window, simple, position, rotation, scale, camPosition, lightPos, camFront, worldUp);
 		simple.Use();
-		depthMapFBO.bindMe();
+		//depthMapFBO.bindMe();
 		//texture0.bind();
 		//simple.setUniform1i("diffTex", texture0.getTextureUnit());
 		glBindVertexArray(vao);
+		
+
 		glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
 
 		//updateShadow(window, simple, position + glm::vec3(0.25f, 0.f, 0.f), rotation, scale, camPosition, lightPos, camFront, worldUp);
@@ -512,7 +528,7 @@ int main() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glfwPollEvents();
-		updateInput(window, camPosition, camFront, worldUp);
+		updateInput(window, camPosition, lightPos, worldUp);
 		shad.Use();
 		updateUniforms(window, shad, glm::vec3(0.f, 0.5f, 0.f), glm::vec3(0.f), glm::vec3(1.f), camPosition, lightPos,camFront,worldUp);
 		shad.Use();
@@ -521,14 +537,14 @@ int main() {
 		shad.setUniform1i("depthMap", 3);
 		depthMapFBO.bindTexture(3);
 		plan.Draw(&shad);
-		updateInput(window, camPosition, camFront, worldUp);
+		updateInput(window, camPosition, lightPos, worldUp);
 
-		updateUniforms(window, shad, glm::vec3(-1.f, 5.f, 0.f), rotation, glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
+		updateUniforms(window, shad, glm::vec3(-1.f, 9.f, 0.f), rotation, glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
 		shad.setUniform1i("depthMap", 3);
 		depthMapFBO.bindTexture(3);
 		plan.Draw(&shad);
 
-		updateInput(window, camPosition, camFront, worldUp);
+		updateInput(window, camPosition, lightPos, worldUp);
 		/*glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
 		glFrontFace(GL_CCW);*/
@@ -542,8 +558,8 @@ int main() {
 		updateInput(window, camPosition, camFront,worldUp);*/
 		prog_final.Use();
 		
-		prog_final.setUniform1i("depthMap", 1);
-		depthMapFBO.bindTexture(1);
+		prog_final.setUniform1i("depthMap", 0);
+		depthMapFBO.bindTexture(0);
 		updateUniforms(window, prog_final, position, rotation, scale, camPosition, lightPos, camFront, worldUp);
 		prog_final.Use();
 		texture0.bind();

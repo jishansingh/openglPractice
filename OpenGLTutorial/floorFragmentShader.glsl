@@ -85,7 +85,13 @@ float calcFrag(vec4 pos){
 	return shadow;
 }
 
-
+float calcShadow3D(vec3 fragToLight){
+	float closetDepth=texture(depthMap,fragToLight).r*1000.f;
+	float currentDepth=length(fragToLight);
+	float bias=0.05f;
+	float shadow=(currentDepth)>closetDepth?1.0:0.0;
+	return shadow;
+}
 void main(){
 	vec4 ambientFinal=calcAmbient();
 	vec4 diffuseFinal=calcDiffuse(vs_position,lightPos0,vs_normal);
@@ -95,8 +101,9 @@ void main(){
 	//fs_color=vec4(pow(fin_color.rgb,gamma),1.f);
 	//float shadow=calcShadow(vs_position);
 	vec3 fragToLight = vs_position - lightPos0;
-	fs_color=vec4(vec3(texture(depthMap,fragToLight).r*100.f),1.f);
-	//fs_color=texture(diffTex,vs_texcoord)*(ambientFinal+(1-shadow)*(diffuseFinal+specFinal));
+	float shadow=calcShadow3D(fragToLight);
+	//fs_color=vec4(,1.f);
+	fs_color=texture(diffTex,vs_texcoord)*(ambientFinal+(1-shadow)*(diffuseFinal+specFinal));
 	//fs_color=vec4(1.f,0.f,0.f,1.f);
 	//fs_color=
 }
