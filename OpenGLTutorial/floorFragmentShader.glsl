@@ -103,8 +103,8 @@ void main(){
 	vec3 fragToLight = vs_position - lightPos0;
 	float shadow=calcShadow3D(fragToLight);
 	//fs_color=vec4(,1.f);
-	//fs_color=texture(diffTex,vs_texcoord*2.f)*(ambientFinal+(1-shadow)*(diffuseFinal+specFinal));
-	fs_color=texture(depthMap, fragToLight);
+	fs_color=texture(diffTex,vs_texcoord*2.f)*(ambientFinal+(1-shadow)*(diffuseFinal+specFinal));
+	//fs_color=texture(depthMap, fragToLight);
 	//fs_color=vec4(1.f,0.f,0.f,1.f);
 	//fs_color=
 }

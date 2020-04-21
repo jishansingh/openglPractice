@@ -640,6 +640,8 @@ int main() {
 		updateUniforms(window, prog_box, glm::vec3(0.f), rotation, scale, camPosition, lightPos, camFront, worldUp);
 		glBindVertexArray(cubevao);
 		depthMapFBO.bindMe();
+		texture0.bind();
+		prog_box.setUniform1i("diffTex", texture0.getTextureUnit());
 		//glBindTexture(GL_TEXTURE_2D, depthMap);
 		glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
 		//updateUniforms(window, prog_final, position + glm::vec3(0.25f, 0.f, 0.f), rotation, scale, camPosition, lightPos, camFront, worldUp);
