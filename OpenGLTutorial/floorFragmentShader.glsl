@@ -86,10 +86,10 @@ float calcFrag(vec4 pos){
 }
 
 float calcShadow3D(vec3 fragToLight){
-	float closetDepth=texture(depthMap,fragToLight).r*1000.f;
+	float closetDepth=texture(depthMap,fragToLight).r*100.f;
 	float currentDepth=length(fragToLight);
 	float bias=0.05f;
-	float shadow=(currentDepth)>closetDepth?1.0:0.0;
+	float shadow=(currentDepth-bias)>closetDepth?1.0:0.0;
 	return shadow;
 }
 void main(){
@@ -103,7 +103,8 @@ void main(){
 	vec3 fragToLight = vs_position - lightPos0;
 	float shadow=calcShadow3D(fragToLight);
 	//fs_color=vec4(,1.f);
-	fs_color=texture(diffTex,vs_texcoord)*(ambientFinal+(1-shadow)*(diffuseFinal+specFinal));
+	//fs_color=texture(diffTex,vs_texcoord*2.f)*(ambientFinal+(1-shadow)*(diffuseFinal+specFinal));
+	fs_color=texture(depthMap, fragToLight);
 	//fs_color=vec4(1.f,0.f,0.f,1.f);
 	//fs_color=
 }

@@ -23,7 +23,7 @@ uniform vec3 lightPos0;
 void main()
 {
     float lightDistance=length(FragPos.xyz-lightPos0);
-    lightDistance=lightDistance/1000.f;
+    lightDistance=lightDistance/100.f;
     gl_FragDepth = lightDistance;
     //gl_FragDepth = LinearizeDepth(gl_FragCoord.z)/100.f;
 }

@@ -41,13 +41,16 @@ void main(){
 		vec4 ambient_final=calcAmbient();
 		vec4 diffuse_final=calcDiffuse(gs_position,lightPos0,gs_normal);
 		vec4 specularFinal=calcSpecular(gs_position,lightPos0,gs_normal,camPos);
+
+		fs_color=texture(texture0,gs_position)*(specularFinal+diffuse_final+ambient_final);
+		//fs_color=vec4(1.f);
 		vec3 lightToPosVec=normalize(gs_position-camPos);
 		vec3 reflectVec=reflect(lightToPosVec,normalize(gs_normal));
 		float ratio=1.0/1.12;
 		vec3 refractVec=refract(lightToPosVec,normalize(gs_normal),ratio);
 		vec4 reflectTex=texture(texture0,reflectVec);
 		vec4 refractTex=texture(texture0,refractVec);
-		fs_color=refractTex*(specularFinal+diffuse_final+ambient_final);
+		//fs_color=refractTex*(specularFinal+diffuse_final+ambient_final);
 	}
 	else{
 		float depth=gl_FragCoord.z;

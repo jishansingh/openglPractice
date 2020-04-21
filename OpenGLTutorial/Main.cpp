@@ -55,7 +55,7 @@ GLuint indices[] = {
 	3,2,0
 };
 unsigned int noOfIndices = sizeof(indices) / sizeof(GLuint);
-
+/*
 float vertices[] = {
 	-0.5f, -0.5f, -0.5f,-1.f,-1.f, -1.f,   0.0f,  0.0f, -1.0f,
 	 0.5f, -0.5f, -0.5f, 1.f,-1.f, -1.f,   0.0f,  0.0f, -1.0f,
@@ -98,10 +98,55 @@ float vertices[] = {
 	 0.5f,  0.5f,  0.5f,1.f, 1.f, 1.f,	    0.0f,  1.0f,  0.0f,
 	-0.5f,  0.5f,  0.5f,-1.f, 1.f, 1.f,	    0.0f,  1.0f,  0.0f,
 	-0.5f,  0.5f, -0.5f,-1.f, 1.f, -1.f,    0.0f,  1.0f,  0.0f
+};*/
+
+
+float vertices[] = {
+	// back face
+	-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+	 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+	 1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+	 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+	-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+	-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+	// front face
+	-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+	 1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+	 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+	 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+	-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+	-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+	// left face
+	-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+	-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+	-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+	-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+	-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+	-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+	// right face
+	 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+	 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+	 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+	 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+	 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+	 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+	// bottom face
+	-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+	 1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+	 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+	 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+	-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+	-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+	// top face
+	-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+	 1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+	 1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+	 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+	-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+	-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
 };
 
-
-unsigned int noOfVertices = sizeof(vertices) / (9 * sizeof(float));
+unsigned int noOfVertices = sizeof(vertices) / (8 * sizeof(float));
 
 void updateUniforms(GLFWwindow* window, Shader& shader, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec3 camPosition, glm::vec3 lightPos0,
 					glm::vec3 camFront, glm::vec3 worldUp) {
@@ -189,7 +234,7 @@ void updateShadow(GLFWwindow* window, Shader& shader, glm::vec3 position, glm::v
 	int framebufferwidth;
 	int framebufferheight;
 	glfwGetFramebufferSize(window, &framebufferwidth, &framebufferheight);
-	projectionMatrix = glm::perspective(glm::radians(fov), static_cast<float>(framebufferwidth) / framebufferheight, nearPlane, farPlane);
+	projectionMatrix = glm::perspective(glm::radians(fov), 1.f, nearPlane, farPlane);
 
 	/*float near_plane = 0.1f, far_plane = 100.5f;
 	glm::mat4 projectionMatrix = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);*/
@@ -324,7 +369,28 @@ int main() {
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)(sizeof(float) * noOfBoxVertices * 6));
 	glEnableVertexAttribArray(2);
 	
+	unsigned int ibo;
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, noOfIndices * sizeof(GLuint), indices, GL_STATIC_DRAW);
 
+	unsigned int cubevao;
+	glGenVertexArrays(1, &cubevao);
+	glBindVertexArray(cubevao);
+
+	unsigned int cubevbo;
+	glGenBuffers(1, &cubevbo);
+	glBindBuffer(GL_ARRAY_BUFFER, cubevbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * noOfVertices * 8, vertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), ((void*)(3 * sizeof(float))));
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), ((void*)(6*sizeof(float))));
+	glEnableVertexAttribArray(2);
 
 	/*glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
 	glEnableVertexAttribArray(0);
@@ -337,10 +403,7 @@ int main() {
 	
 
 	
-	unsigned int ibo;
-	glGenBuffers(1, &ibo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, noOfIndices * sizeof(GLuint), indices, GL_STATIC_DRAW);
+	
 
 	/*unsigned int ibo;
 	glGenBuffers(1, &ibo);
@@ -512,7 +575,12 @@ int main() {
 		glBindVertexArray(vao);
 		
 
-		glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
+		//glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
+		//glDisable(GL_CULL_FACE);
+		//simple.Use();
+		//updateUniforms(window, simple, glm::vec3(0.f), rotation, glm::vec3(0.25f), camPosition, lightPos, camFront, worldUp);
+		//glBindVertexArray(cubevao);
+		//glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
 
 		//updateShadow(window, simple, position + glm::vec3(0.25f, 0.f, 0.f), rotation, scale, camPosition, lightPos, camFront, worldUp);
 		//glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
@@ -560,14 +628,20 @@ int main() {
 		
 		prog_final.setUniform1i("depthMap", 0);
 		depthMapFBO.bindTexture(0);
-		updateUniforms(window, prog_final, position, rotation, scale, camPosition, lightPos, camFront, worldUp);
+		updateUniforms(window, prog_final, position, rotation, glm::vec3(2.f)*scale, camPosition, lightPos, camFront, worldUp);
 		prog_final.Use();
 		texture0.bind();
 		prog_final.setUniform1i("diffTex", texture0.getTextureUnit());
 		glBindVertexArray(vao);
 		//glBindTexture(GL_TEXTURE_2D, depthMap);
-		glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
-		
+		//glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
+		glDisable(GL_CULL_FACE);
+		prog_box.Use();
+		updateUniforms(window, prog_box, glm::vec3(0.f), rotation, scale, camPosition, lightPos, camFront, worldUp);
+		glBindVertexArray(cubevao);
+		depthMapFBO.bindMe();
+		//glBindTexture(GL_TEXTURE_2D, depthMap);
+		glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
 		//updateUniforms(window, prog_final, position + glm::vec3(0.25f, 0.f, 0.f), rotation, scale, camPosition, lightPos, camFront, worldUp);
 		//glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
 		
