@@ -16,10 +16,18 @@ vec4 calcAmbient(){
 	return vec4(0.1f,0.1f,0.1f,1.f);
 	//return vec4(1.f,1.f,1.f,1.f);
 }
+float getPositive(float a){
+	if(a>0){
+		return a;
+	}
+	else{
+		return -1*a;
+	}
+}
 vec4 calcDiffuse(vec3 position,vec3 lightPos,vec3 normal){
 	vec3 norm_normal=normalize(normal);
 	vec3 posToLightVec=normalize(lightPos-position);
-	float diffuse=clamp(dot(norm_normal,posToLightVec),0,1);
+	float diffuse=clamp(getPositive(dot(norm_normal,posToLightVec)),0,1);
 	vec4 diffuse_final=vec4(1.f,1.f,1.f,1.f)*diffuse;
 	return diffuse_final;
 }
@@ -28,9 +36,9 @@ vec4 calcSpecular(vec3 position,vec3 lightPos,vec3 normal,vec3 camPosition){
 	vec3 norm_normal=normalize(normal);
 	vec3 posToCamVec=normalize(camPosition-position);
 	vec3 reflectVec=normalize(reflect(-posToLightVec,norm_normal));
-	float spec_const=pow(clamp(dot(reflectVec,posToCamVec),0,1),30);
+	float spec_const=pow(clamp(dot(reflectVec,posToCamVec),0,1),50);
 	vec4 spec_final=vec4(1.f,1.f,1.f,1.f)*spec_const;
-	return vec4(1.f,1.f,1.f,1.f);
+	//return vec4(1.f,1.f,1.f,1.f);
 	return spec_final;
 }
 out vec4 fs_color;
@@ -38,14 +46,18 @@ void main(){
 	vec4 ambient_final=calcAmbient();
 	vec3 tex_normal;
 	if(norm){
-		 tex_normal=texture(normalTex,gs_texcoord).xyz;
+		 //tex_normal=vec3(2.f)*texture(normalTex,gs_texcoord).xyz-vec3(1.f);
 	}
 	else{
 		 tex_normal=gs_normal;
 	}
+	 tex_normal=gs_normal;
 	//vec3 tex_normal=texture(normalTex,gs_texcoord).xyz;
 	vec4 diffuse_final=calcDiffuse(gs_position,lightPos0,tex_normal);
 	vec4 specularFinal=calcSpecular(gs_position,lightPos0,tex_normal,camPos);
-	fs_color=texture(diffTex,gs_texcoord)*((specularFinal+diffuse_final)+ambient_final);
+	float distance = length(gs_position-lightPos0);
+	fs_color=texture(diffTex,gs_texcoord)*((specularFinal*10.f+diffuse_final*10.f)/distance+ambient_final);
+	//fs_color=texture(diffTex,gs_texcoord);
+	//fs_color=vec4(0.f,1.f,0.f,1.f);
 }
 
