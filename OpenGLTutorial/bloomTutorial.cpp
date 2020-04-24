@@ -30,7 +30,7 @@ float texcoord[] = {
 	1.f,1.f,
 };
 
-unsigned int quad_count= sizeof(vertices_box) / (3*sizeof(float));
+unsigned int quad_count = sizeof(vertices_box) / (3 * sizeof(float));
 
 GLuint indices[] = {
 	0,1,2,
@@ -228,7 +228,7 @@ int main() {
 
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), ((void*)(6 * sizeof(float))));
 	glEnableVertexAttribArray(2);
-	
+
 
 	unsigned int quadvao;
 	glGenVertexArrays(1, &quadvao);
@@ -246,7 +246,7 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)(quad_count * 3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(quad_count * 3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(quad_count * 6 * sizeof(float)));
@@ -265,82 +265,122 @@ int main() {
 	unsigned int texture2;
 	glGenTextures(1, &texture2);
 	glBindTexture(GL_TEXTURE_2D, texture2);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture2, 0);
+
+	unsigned int brightTex;
+	glGenTextures(1, &brightTex);
+	glBindTexture(GL_TEXTURE_2D, brightTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, brightTex, 0);
+	//glBindFramebuffer(GL_FRAMEBUFFER, quadfbo);
 	
+	unsigned int DrawBuffers[2] = { GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, DrawBuffers);
+
+	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	unsigned int rboDepth;
+	glGenRenderbuffers(1, &rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, WINDOW_WIDTH, WINDOW_HEIGHT);
+
 	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, quadfbo, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, quadfbo);
 	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture2, 0);
-	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
-
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture2, 0);
-	//GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-	//glDrawBuffers(1, DrawBuffers);
-
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+	
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete!" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	Shader normalShader("normalMapVertexShader.glsl", "normalMapFragmentShader.glsl", "normalMapGeometryShader.glsl");
+	Shader normalShader("bloomVertexShader.glsl", "bloomFragmentShader.glsl", "bloomGeometryShader.glsl");
 	Shader quadShader("quadVertexShader.glsl", "quadFragmentShader.glsl", "");
 	Texture texture0("images/floor.png", GL_TEXTURE_2D, 1);
 	//Texture texture1("images/brickwall_normal.jpg", GL_TEXTURE_2D, 0);
 	glm::vec3 camPosition(0.f, 0.f, 1.f);
 	glm::vec3 position(0.f, 0.f, 0.f);
 	glm::vec3 rotation(0.f, 0.f, 0.f);
-	glm::vec3 scale(2.f,2.f,10.f);
+	glm::vec3 scale(2.f, 2.f, 2.f);
 	glm::vec3 worldUp(0.f, 1.f, 0.f);
 	glm::vec3 camFront(0.f, 0.f, 0.f);
 	glm::vec3 lightPos(-2.0f, 10.0f, 1.0f);
 	int norm = 0;
-	normalShader.setUniform1i("norm", norm);
+	glEnable(GL_DEPTH_TEST);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	normalShader.setUniform1i("norm", 1);
 	while (!glfwWindowShouldClose(window)) {
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		
-		
+
+
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindFramebuffer(GL_FRAMEBUFFER, quadfbo);
-		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_DEPTH_TEST);
+		/*glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture2);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, brightTex);*/
+		//glDrawBuffers(2, DrawBuffers);
+		/*glBindTexture(GL_COLOR_ATTACHMENT0, texture2);
+		
+		glBindTexture(GL_COLOR_ATTACHMENT1, brightTex);*/
 		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		//glEnable(GL_DEPTH_TEST);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		//glClear(GL_COLOR_BUFFER_BIT);
+		//glBindTexture(GL_TEXTURE_2D, brightTex);
+		//glBindTexture(GL_TEXTURE_2D, brightTex);
+		//glDrawBuffers(2, DrawBuffers);
+		//glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		//glDrawBuffer(GL_COLOR_ATTACHMENT0);
 		normalShader.Use();
 		glBindVertexArray(cubevao);
 		updateInput(window, camPosition, lightPos, worldUp, norm);
 		updateUniforms(window, normalShader, position, rotation, scale, camPosition, lightPos, camFront, worldUp);
-		normalShader.setUniform1i("norm", norm);
+		normalShader.setUniform1i("norm", 1);
 		normalShader.setUniform1i("diffTex", texture0.getTextureUnit());
 		//normalShader.setUniform1i("normalTex", texture1.getTextureUnit());
 		texture0.bind();
 		//texture1.bind();
 		glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
+
 		updateUniforms(window, normalShader, lightPos, rotation, glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
 		normalShader.setUniform1i("diffTex", texture0.getTextureUnit());
 		texture0.bind();
 		glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
 		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+
+		glClear(GL_DEPTH_BUFFER_BIT);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+		//glDisable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		//glClear(GL_COLOR_BUFFER_BIT);
 		quadShader.Use();
 		glBindVertexArray(quadvao);
 		updateUniforms(window, quadShader, glm::vec3(0.f), rotation, glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
-		glBindTexture(GL_TEXTURE_2D, texture2);
+
+		//dont mess up the order cost 6 hours
 		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, brightTex);
 		quadShader.setUniform1i("texture0", 0);
 		glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
-
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
