@@ -305,6 +305,8 @@ int main() {
 
 
 	const unsigned int NR_LIGHTS = 32;
+	glm::mat4* matrices;
+	matrices = new glm::mat4[NR_LIGHTS];
 	std::vector<glm::vec3> lightPositions;
 	std::vector<glm::vec3> lightColors;
 	srand(10);
@@ -320,9 +322,38 @@ int main() {
 		float gColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
 		float bColor = ((rand() % 100) / 200.0f) + 0.5; // between 0.5 and 1.0
 		lightColors.push_back(glm::vec3(rColor, gColor, bColor));
+		glm::mat4 temp_mat = glm::mat4(1.0f);
+		temp_mat = glm::translate(temp_mat, glm::vec3(xPos, yPos, zPos));
+		temp_mat = glm::scale(temp_mat, glm::vec3(0.25f));
+		matrices[i] = temp_mat;
 	}
+	
+	unsigned int matrixArr;
+	glGenBuffers(1, &matrixArr);
+	glBindBuffer(GL_ARRAY_BUFFER, matrixArr);
+	glBufferData(GL_ARRAY_BUFFER, NR_LIGHTS* sizeof(glm::mat4), &matrices[0], GL_STATIC_DRAW);
+
+	
+
+	glBindVertexArray(cubevao);
+	glBindBuffer(GL_ARRAY_BUFFER, matrixArr);
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), 0);
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+	glEnableVertexAttribArray(6);
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
 
 
+	glVertexAttribDivisor(3, 1);
+	glVertexAttribDivisor(4, 1);
+	glVertexAttribDivisor(5, 1);
+	glVertexAttribDivisor(6, 1);
+	//glBindBuffer(GL_ARRAY_BUFFER, matrixArr);
+	
+	glBindVertexArray(0);
 	int norm = 0;
 	glEnable(GL_DEPTH_TEST);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -409,14 +440,34 @@ int main() {
 		);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		for (unsigned int i = 0; i < NR_LIGHTS; i++)
+		for (unsigned int i = 0; i < 1; i++)
 		{
 			pingPongShader.Use();
-			updateUniforms(window, pingPongShader, lightPositions[i], rotation, glm::vec3(0.25f), camPosition, lightPositions, lightColors, camFront, worldUp);
+			//updateUniforms(window, pingPongShader, lightPositions[i], rotation, glm::vec3(0.25f), camPosition, lightPositions, lightColors, camFront, worldUp);
 			//pingPongShader.setUniform1i("texture0", texture0.getTextureUnit());
 			//texture0.bind();
+			glm::mat4 viewMatrix(1.f);
+			glm::vec3 front = glm::cross(glm::cross(worldUp, camPosition), worldUp);
+			viewMatrix = glm::lookAt(camPosition, camFront, worldUp);
+
+			//projection matrix
+			float fov = 90.f;
+			float nearPlane = 0.1f;
+			float farPlane = 100.f;
+
+			glm::mat4 projectionMatrix(1.f);
+			int framebufferwidth;
+			int framebufferheight;
+			glfwGetFramebufferSize(window, &framebufferwidth, &framebufferheight);
+			projectionMatrix = glm::perspective(glm::radians(fov), static_cast<float>(framebufferwidth) / framebufferheight, nearPlane, farPlane);
+
+			//shader.setUniform3f("lightPos0", GL_FALSE, lightPos0);
+			pingPongShader.setUniformMatrix4fv("viewMatrix", GL_FALSE, viewMatrix);
+			pingPongShader.setUniformMatrix4fv("projectionMatrix", GL_FALSE, projectionMatrix);
+			pingPongShader.Use();
 			glBindVertexArray(cubevao);
-			glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
+			glDrawArraysInstanced(GL_TRIANGLES, 0, noOfVertices, NR_LIGHTS);
+			//glDrawArrays(GL_TRIANGLES, 0, noOfVertices);
 			glBindVertexArray(0);
 			//glBindTexture(GL_TEXTURE_2D, 0);
 		}
