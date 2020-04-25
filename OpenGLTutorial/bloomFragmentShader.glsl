@@ -31,8 +31,8 @@ float getPositive(float a){
 vec4 calcDiffuse(vec3 position,vec3 lightPos,vec3 normal){
 	vec3 norm_normal=normalize(normal);
 	vec3 posToLightVec=normalize(lightPos-position);
-	//float diffuse=clamp(getPositive(dot(norm_normal,posToLightVec)),0,1);
-	float diffuse=max(dot(norm_normal,posToLightVec),0);
+	float diffuse=clamp(getPositive(dot(norm_normal,posToLightVec)),0,1);
+	//float diffuse=max(dot(norm_normal,posToLightVec),0);
 	vec4 diffuse_final=vec4(1.f,1.f,1.f,1.f)*diffuse;
 	return diffuse_final;
 }
@@ -57,7 +57,7 @@ void main(){
 	vec4 diffuse_final=calcDiffuse(gs_position,lightPos0,tex_normal);
 	vec4 specularFinal=calcSpecular(gs_position,lightPos0,tex_normal,camPos);
 	float distance = length(gs_position-lightPos0);
-	fs_color=texture(diffTex,gs_texcoord)*((specularFinal*0.f+diffuse_final*10.f)/distance+ambient_final);
+	fs_color=texture(diffTex,gs_texcoord)*((specularFinal*10.f+diffuse_final*100.f)/distance+ambient_final);
 	float brightness = dot(fs_color.rgb, vec3(0.2126, 0.7152, 0.0722));
 	
 	if(brightness>1.0){

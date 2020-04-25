@@ -304,8 +304,30 @@ int main() {
 		std::cout << "Framebuffer not complete!" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+
+	unsigned int pingpongfBuffer[2];
+	glGenFramebuffers(2, pingpongfBuffer);
+	unsigned int pingpongtexture[2];
+	glGenTextures(2, pingpongtexture);
+	for (int i = 0; i < 2; i++) {
+		glBindFramebuffer(GL_FRAMEBUFFER, pingpongfBuffer[i]);
+		
+		glBindTexture(GL_TEXTURE_2D, pingpongtexture[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongtexture[i], 0);
+
+	}
+	
+	
+
 	Shader normalShader("bloomVertexShader.glsl", "bloomFragmentShader.glsl", "bloomGeometryShader.glsl");
 	Shader quadShader("quadVertexShader.glsl", "quadFragmentShader.glsl", "");
+	Shader pingPongShader("blurVertexShader.glsl", "blurFragmentShader.glsl", "");
 	Texture texture0("images/floor.png", GL_TEXTURE_2D, 1);
 	//Texture texture1("images/brickwall_normal.jpg", GL_TEXTURE_2D, 0);
 	glm::vec3 camPosition(0.f, 0.f, 1.f);
@@ -364,7 +386,35 @@ int main() {
 
 
 		glClear(GL_DEPTH_BUFFER_BIT);
+		
 
+		int amount = 10;
+		bool horizontal = true;
+		bool first_time = true;
+		for (int i = 0; i < amount; i++) {
+			glBindFramebuffer(GL_FRAMEBUFFER, pingpongfBuffer[horizontal]);
+			glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+			//glDisable(GL_DEPTH_TEST);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+			//glClear(GL_COLOR_BUFFER_BIT);
+			pingPongShader.Use();
+			glBindVertexArray(quadvao);
+			updateUniforms(window, pingPongShader, glm::vec3(0.f), rotation, glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
+
+			//dont mess up the order cost 6 hours
+			unsigned int cTex = first_time ? brightTex : pingpongtexture[!horizontal];
+			pingPongShader.setUniform1i("horizontal", horizontal);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, cTex);
+			quadShader.setUniform1i("texture0", 0);
+			glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			if (first_time) {
+				first_time = false;
+			}
+			horizontal = !horizontal;
+		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 		//glDisable(GL_DEPTH_TEST);
@@ -376,9 +426,13 @@ int main() {
 		updateUniforms(window, quadShader, glm::vec3(0.f), rotation, glm::vec3(1.f), camPosition, lightPos, camFront, worldUp);
 
 		//dont mess up the order cost 6 hours
+		quadShader.setUniform1i("horizontal", horizontal);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, brightTex);
+		glBindTexture(GL_TEXTURE_2D, pingpongtexture[0]);
 		quadShader.setUniform1i("texture0", 0);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
+		quadShader.setUniform1i("texture0", 1);
 		glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
